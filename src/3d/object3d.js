@@ -173,6 +173,7 @@ export default class Object3D extends Listenable {
 	 * @return {module:math.Mat4} - This Object3d local model matrix.
 	 */
 	get localModel() {
+		this._ensureValidModel();
 		return this._local_model;
 	}
 
@@ -182,6 +183,7 @@ export default class Object3D extends Listenable {
 	 * @return {module:math.Mat4} - This Object3d world model matrix.
 	 */
 	get worldModel() {
+		this._ensureValidModel();
 		return this._world_model;
 	}
 
@@ -313,9 +315,7 @@ export default class Object3D extends Listenable {
 	 * Updates this object model matrix.
 	 */
 	update() {
-		if(!this._is_model_valid)
-			this._revalidateModel();
-
+		this._ensureValidModel();
 		for(let child of this._children)
 			child.update();
 	}
@@ -441,6 +441,20 @@ export default class Object3D extends Listenable {
 		}
 
 		this.notify('destroy');
+	}
+
+	/**
+	 * Ensures that the model matrix is up-to-date with all parameters of this
+	 * obejct and of all of its ancestors.
+	 */
+	_ensureValidModel() {
+		if (this._parent) {
+			this._parent._ensureValidModel();
+		}
+
+		if (!this._is_model_valid) {
+			this._revalidateModel();
+		}
 	}
 
 	/**
